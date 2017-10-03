@@ -14,6 +14,8 @@ npm run dev
 npm start
 ```
 
+The app will be served at `localhost:8080` and GraphiQL can be accessed at `localhost:8080/graphql`.
+
 ## Why Did You Commit Your mLab Credentials?
 
 There is a `.env` file included with a connection string to an mLab database. Normally the `.env` file would not be committed and any access to a remote server would be hidden. The database used for this example is a throwaway. For the sake of getting started quickly, it is easier to provide direct access to a working database out of the box.
