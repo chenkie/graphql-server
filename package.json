@@ -1,0 +1,27 @@
+{
+  "name": "fem-graphql-server",
+  "version": "0.0.0",
+  "description": "GraphQL server for Front End Masters' GraphQL Workshop",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "url": "git+github.com:chenkie/fem-graphql-server.git"
+  },
+  "author": "Ryan Chenkie <ryan@elevatedigital.io>",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.1",
+    "express-graphql": "^0.6.11",
+    "graphql": "^0.11.6",
+    "graphql-tools": "^1.2.3",
+    "mongoose": "^4.11.14"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  }
+}
