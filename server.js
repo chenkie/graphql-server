@@ -101,7 +101,7 @@ const schema = new gql.GraphQLSchema({
       createCourse: {
         type: CourseType,
         args: {
-          name: { type: gql.GraphQLString },
+          name: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
           description: { type: gql.GraphQLString },
           level: { type: gql.GraphQLString }
         },
@@ -114,8 +114,8 @@ const schema = new gql.GraphQLSchema({
       updateCourse: {
         type: CourseType,
         args: {
-          id: { type: gql.GraphQLID },
-          name: { type: gql.GraphQLString },
+          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) },
+          name: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
           description: { type: gql.GraphQLString },
           level: { type: gql.GraphQLString }
         },
@@ -129,7 +129,7 @@ const schema = new gql.GraphQLSchema({
       deleteCourse: {
         type: CourseType,
         args: {
-          id: { type: gql.GraphQLID }
+          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) }
         },
         resolve(_, { id }) {
           return Promise.resolve(Course.findOneAndRemove({ _id: id }));
@@ -138,10 +138,12 @@ const schema = new gql.GraphQLSchema({
       createStudent: {
         type: StudentType,
         args: {
-          firstName: { type: gql.GraphQLString },
-          lastName: { type: gql.GraphQLString },
-          active: { type: gql.GraphQLBoolean },
-          courses: { type: new gql.GraphQLList(gql.GraphQLString) }
+          firstName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
+          lastName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
+          active: { type: new gql.GraphQLNonNull(gql.GraphQLBoolean) },
+          courses: {
+            type: new gql.GraphQLNonNull(new gql.GraphQLList(gql.GraphQLString))
+          }
         },
         resolve(_, { firstName, lastName, active, courses }) {
           const input = { firstName, lastName, active, courses };
@@ -155,10 +157,10 @@ const schema = new gql.GraphQLSchema({
       updateStudent: {
         type: StudentType,
         args: {
-          id: { type: gql.GraphQLID },
-          firstName: { type: gql.GraphQLString },
-          lastName: { type: gql.GraphQLString },
-          active: { type: gql.GraphQLBoolean },
+          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) },
+          firstName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
+          lastName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
+          active: { type: new gql.GraphQLNonNull(gql.GraphQLBoolean) },
           courses: { type: new gql.GraphQLList(gql.GraphQLString) }
         },
         resolve(_, { id, firstName, lastName, active, courses }) {
@@ -173,7 +175,7 @@ const schema = new gql.GraphQLSchema({
       deleteStudent: {
         type: StudentType,
         args: {
-          id: { type: gql.GraphQLID }
+          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) }
         },
         resolve(_, { id }) {
           return Promise.resolve(
