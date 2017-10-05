@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const gql = require('graphql');
+const makeExecutableSchema = require('graphql-tools').makeExecutableSchema;
 const mongoose = require('mongoose');
 const cors = require('cors');
 
@@ -11,49 +12,6 @@ const app = express();
 
 const COURSES = require('./data/courses');
 const STUDENTS = require('./data/students');
-
-const CourseType = new gql.GraphQLObjectType({
-  name: 'CourseType',
-  fields: {
-    id: { type: gql.GraphQLID },
-    name: { type: gql.GraphQLString },
-    description: { type: gql.GraphQLString },
-    level: { type: gql.GraphQLString }
-  }
-});
-
-const StudentType = new gql.GraphQLObjectType({
-  name: 'StudentType',
-  fields: {
-    id: { type: gql.GraphQLID },
-    firstName: { type: gql.GraphQLString },
-    lastName: { type: gql.GraphQLString },
-    active: { type: gql.GraphQLBoolean },
-    courses: { type: new gql.GraphQLList(CourseType) }
-  }
-});
-
-// Use the GraphQLInputObject types when moving everything over
-// to a single input variable
-
-// const CourseInputType = new gql.GraphQLInputObjectType({
-//   name: 'CourseInputType',
-//   fields: {
-//     name: { type: gql.GraphQLString },
-//     description: { type: gql.GraphQLString },
-//     level: { type: gql.GraphQLString }
-//   }
-// });
-
-// const StudentInputType = new gql.GraphQLInputObjectType({
-//   name: 'StudentInputType',
-//   fields: {
-//     firstName: { type: gql.GraphQLString },
-//     lastName: { type: gql.GraphQLString },
-//     active: { type: gql.GraphQLBoolean },
-//     courseIds: { type: gql.GraphQLString }
-//   }
-// });
 
 const CourseSchema = mongoose.Schema({
   name: { type: String, required: true },
@@ -77,115 +35,99 @@ const StudentSchema = mongoose.Schema({
 const Course = mongoose.model('course', CourseSchema);
 const Student = mongoose.model('student', StudentSchema);
 
-const schema = new gql.GraphQLSchema({
-  query: new gql.GraphQLObjectType({
-    name: 'RootQueryType',
-    fields: {
-      allCourses: {
-        type: new gql.GraphQLList(CourseType),
-        resolve() {
-          return Promise.resolve(Course.find({}));
-        }
-      },
-      allStudents: {
-        type: new gql.GraphQLList(StudentType),
-        resolve() {
-          return Promise.resolve(Student.find({}));
-        }
-      }
+const typeDefs = `
+  type Course {
+    id: ID
+    name: String
+    description: String
+    level: String
+  }
+
+  type Student {
+    id: ID
+    firstName: String
+    lastName: String
+    active: Boolean
+    courses: [Course]
+  }
+
+  type CourseInput {
+    id: ID!
+    name: String!
+    description: String
+    level: String
+  }
+
+  type StudentInput {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    active: Boolean!
+    courses: [Course]!
+  }
+
+  type Query {
+    allCourses: [Course]
+    allStudents: [Student]
+  }
+
+  type Mutation {
+    createCourse(name: String!, description: String, level: String): Course
+    updateCourse(id: ID! name: String!, description: String, level: String): Course
+    deleteCourse(id: ID!): Course
+    createStudent(firstName: String! lastName: String!, active: Boolean!, courses: [String]!): Student
+    updateStudent(id: ID!, firstName: String! lastName: String!, active: Boolean!, courses: [String]!): Student
+    deleteStudent(id: ID!): Student
+  }
+`;
+
+const resolvers = {
+  Query: {
+    allCourses: () => {
+      return Promise.resolve(Course.find({}));
+    },
+    allStudents: () => {
+      return Promise.resolve(Student.find({}));
     }
-  }),
-  mutation: new gql.GraphQLObjectType({
-    name: 'RootMutationType',
-    fields: {
-      createCourse: {
-        type: CourseType,
-        args: {
-          name: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
-          description: { type: gql.GraphQLString },
-          level: { type: gql.GraphQLString }
-        },
-        resolve(_, { id, name, description, level }) {
-          const input = { _id: id, name, description, level };
-          const course = new Course(input);
-          return Promise.resolve(course.save());
-        }
-      },
-      updateCourse: {
-        type: CourseType,
-        args: {
-          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) },
-          name: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
-          description: { type: gql.GraphQLString },
-          level: { type: gql.GraphQLString }
-        },
-        resolve(_, { id, name, description, level }) {
-          const input = { name, description, level };
-          return Promise.resolve(
-            Course.findOneAndUpdate({ _id: id }, input, { new: true })
-          );
-        }
-      },
-      deleteCourse: {
-        type: CourseType,
-        args: {
-          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) }
-        },
-        resolve(_, { id }) {
-          return Promise.resolve(Course.findOneAndRemove({ _id: id }));
-        }
-      },
-      createStudent: {
-        type: StudentType,
-        args: {
-          firstName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
-          lastName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
-          active: { type: new gql.GraphQLNonNull(gql.GraphQLBoolean) },
-          courses: {
-            type: new gql.GraphQLNonNull(new gql.GraphQLList(gql.GraphQLString))
-          }
-        },
-        resolve(_, { firstName, lastName, active, courses }) {
-          const input = { firstName, lastName, active, courses };
-          const student = new Student(input);
-          student.save();
-          return Promise.resolve(
-            Student.populate(student, { path: 'courses' })
-          );
-        }
-      },
-      updateStudent: {
-        type: StudentType,
-        args: {
-          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) },
-          firstName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
-          lastName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
-          active: { type: new gql.GraphQLNonNull(gql.GraphQLBoolean) },
-          courses: { type: new gql.GraphQLList(gql.GraphQLString) }
-        },
-        resolve(_, { id, firstName, lastName, active, courses }) {
-          const input = { firstName, lastName, active, courses };
-          return Promise.resolve(
-            Student.findOneAndUpdate({ _id: id }, input, {
-              new: true
-            }).populate('courses')
-          );
-        }
-      },
-      deleteStudent: {
-        type: StudentType,
-        args: {
-          id: { type: new gql.GraphQLNonNull(gql.GraphQLID) }
-        },
-        resolve(_, { id }) {
-          return Promise.resolve(
-            Student.findOneAndRemove({ _id: id }).populate('courses')
-          );
-        }
-      }
+  },
+  Mutation: {
+    createCourse: (_, { name, description, level }) => {
+      const input = { name, description, level };
+      const course = new Course(input);
+      return Promise.resolve(course.save());
+    },
+    updateCourse: (_, { id, name, description, level }) => {
+      const input = { name, description, level };
+      return Promise.resolve(
+        Course.findOneAndUpdate({ _id: id }, input, { new: true })
+      );
+    },
+    deleteCourse: (_, { id }) => {
+      return Promise.resolve(Course.findOneAndRemove({ _id: id }));
+    },
+    createStudent: (_, { firstName, lastName, active, courses }) => {
+      const input = { firstName, lastName, active, courses };
+      const student = new Student(input);
+      student.save();
+      return Promise.resolve(Student.populate(student, { path: 'courses' }));
+    },
+    updateStudent: (_, { id, firstName, lastName, active, courses }) => {
+      const input = { firstName, lastName, active, courses };
+      return Promise.resolve(
+        Student.findOneAndUpdate({ _id: id }, input, {
+          new: true
+        }).populate('courses')
+      );
+    },
+    deleteStudent: (_, { id }) => {
+      return Promise.resolve(
+        Student.findOneAndRemove({ _id: id }).populate('courses')
+      );
     }
-  })
-});
+  }
+};
+
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 app.use(
   '/graphql',
