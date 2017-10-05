@@ -105,8 +105,8 @@ const schema = new gql.GraphQLSchema({
           description: { type: gql.GraphQLString },
           level: { type: gql.GraphQLString }
         },
-        resolve(_, { id, name, description, level }) {
-          const input = { _id: id, name, description, level };
+        resolve(_, { name, description, level }) {
+          const input = { name, description, level };
           const course = new Course(input);
           return Promise.resolve(course.save());
         }
