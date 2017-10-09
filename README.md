@@ -16,6 +16,13 @@ npm start
 
 The app will be served at `localhost:8080` and GraphiQL can be accessed at `localhost:8080/graphql`.
 
+## Challenge Instructions
+
+Files for challenge:
+* `server.js`
+
+The challenge instructions are found in the comments. Find comments marked with `TODO` and implement the feature based on the instructions.
+
 ## License
 
 MIT

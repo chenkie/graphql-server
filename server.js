@@ -16,7 +16,7 @@ const schema = new gql.GraphQLSchema({
       // if we want to get our message
       // just as a string
       message: {
-        // tell GraphQL that the message field should be a string type
+        // TODO: tell GraphQL that the message field should be a string type
         // and that it should resolve with the messageAsString string
       },
       // if we want to get our message
@@ -24,7 +24,7 @@ const schema = new gql.GraphQLSchema({
       // we can work with multiple keys in
       // this case if we want
       messageAsObject: {
-        // tell GraphQL that the messageAsObject field should be an Object type
+        // TODO: tell GraphQL that the messageAsObject field should be an Object type
         // and that it should resolve with the messageAsObject object
       }
     }
