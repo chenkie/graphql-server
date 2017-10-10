@@ -12,19 +12,19 @@ let COURSES = require('./data/courses');
 let STUDENTS = require('./data/students');
 
 const typeDefs = `
-  type Course {
+  type CourseType {
     id: ID
     name: String
     description: String
     level: String
   }
 
-  type Student {
+  type StudentType {
     id: ID
     firstName: String
     lastName: String
     active: Boolean
-    courses: [Course]
+    courses: [CourseType]
   }
 
   input CourseInput {
@@ -43,17 +43,17 @@ const typeDefs = `
   }
 
   type Query {
-    allCourses: [Course]
-    allStudents: [Student]
+    allCourses: [CourseType]
+    allStudents: [StudentType]
   }
 
   type Mutation {
-    createCourse(name: String!, description: String, level: String): Course
-    updateCourse(id: ID! name: String!, description: String, level: String): Course
-    deleteCourse(id: ID!): Course
-    createStudent(firstName: String! lastName: String!, active: Boolean!, coursesIds: [String]!): Student
-    updateStudent(id: ID!, firstName: String! lastName: String!, active: Boolean!, coursesIds: [ID]!): Student
-    deleteStudent(id: ID!): Student
+    createCourse(name: String!, description: String, level: String): CourseType
+    updateCourse(id: ID! name: String!, description: String, level: String): CourseType
+    deleteCourse(id: ID!): CourseType
+    createStudent(firstName: String! lastName: String!, active: Boolean!, coursesIds: [String]!): StudentType
+    updateStudent(id: ID!, firstName: String! lastName: String!, active: Boolean!, coursesIds: [ID]!): StudentType
+    deleteStudent(id: ID!): StudentType
   }
 `;
 
