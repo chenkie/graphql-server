@@ -12,51 +12,46 @@ let COURSES = require('./data/courses');
 let STUDENTS = require('./data/students');
 
 const typeDefs = `
-  type Course {
-    id: ID
-    name: String
-    description: String
-    level: String
+  # TODO: create a CourseType type
+  # with the same fields as before
+  type CourseType {
+
   }
 
-  type Student {
-    id: ID
-    firstName: String
-    lastName: String
-    active: Boolean
-    courses: [Course]
+  # TODO: create a StudentType type
+  # with the same fields as before
+  # NOTE: think about what the courses
+  # field should be
+  type StudentType {
+
   }
 
-  type CourseInput {
-    id: ID!
-    name: String!
-    description: String
-    level: String
+  # TODO: create a CourseInput input type
+  # with the same fields as before
+  input CourseInput {
+
   }
 
-  type StudentInput {
-    id: ID!
-    firstName: String!
-    lastName: String!
-    active: Boolean!
-    coursesIds: [ID]!
+  # TODO: create a CourseInput input type
+  # with the same fields as before
+  input StudentInput {
+
   }
 
+  # TODO: add the query fields we had before
+  # so we can get all courses and all students
   type Query {
-    allCourses: [Course]
-    allStudents: [Student]
+
   }
 
+  # TODO: add the mutation fields we had before
+  # so we can get all courses and all students
   type Mutation {
-    createCourse(name: String!, description: String, level: String): Course
-    updateCourse(id: ID! name: String!, description: String, level: String): Course
-    deleteCourse(id: ID!): Course
-    createStudent(firstName: String! lastName: String!, active: Boolean!, coursesIds: [String]!): Student
-    updateStudent(id: ID!, firstName: String! lastName: String!, active: Boolean!, coursesIds: [ID]!): Student
-    deleteStudent(id: ID!): Student
+
   }
 `;
 
+// Freebie!
 const resolvers = {
   Query: {
     allCourses: () => {
@@ -138,7 +133,9 @@ const resolvers = {
   }
 };
 
-const schema = makeExecutableSchema({ typeDefs, resolvers });
+// Use makeExecutableSchema to wire up
+// the type definitions and the resolvers
+const schema = ...;
 
 app.use(
   '/graphql',
