@@ -51,7 +51,7 @@ const StudentType = new gql.GraphQLObjectType({
 //     firstName: { type: gql.GraphQLString },
 //     lastName: { type: gql.GraphQLString },
 //     active: { type: gql.GraphQLBoolean },
-//     courseIds: { type: gql.GraphQLString }
+//     coursesIds: { type: gql.GraphQLID }
 //   }
 // });
 
@@ -90,7 +90,7 @@ const schema = new gql.GraphQLSchema({
       allStudents: {
         type: new gql.GraphQLList(StudentType),
         resolve() {
-          return Promise.resolve(Student.find({}));
+          return Promise.resolve(Student.find({}).populate('courses'));
         }
       }
     }
@@ -141,12 +141,13 @@ const schema = new gql.GraphQLSchema({
           firstName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
           lastName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
           active: { type: new gql.GraphQLNonNull(gql.GraphQLBoolean) },
-          courses: {
-            type: new gql.GraphQLNonNull(new gql.GraphQLList(gql.GraphQLString))
+          coursesIds: {
+            type: new gql.GraphQLNonNull(new gql.GraphQLList(gql.GraphQLID))
           }
         },
-        resolve(_, { firstName, lastName, active, courses }) {
-          const input = { firstName, lastName, active, courses };
+        resolve(_, { firstName, lastName, active, coursesIds }) {
+          let input = { firstName, lastName, active, coursesIds };
+          input.courses = coursesIds;
           const student = new Student(input);
           student.save();
           return Promise.resolve(
@@ -161,10 +162,11 @@ const schema = new gql.GraphQLSchema({
           firstName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
           lastName: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
           active: { type: new gql.GraphQLNonNull(gql.GraphQLBoolean) },
-          courses: { type: new gql.GraphQLList(gql.GraphQLString) }
+          coursesIds: { type: new gql.GraphQLList(gql.GraphQLID) }
         },
-        resolve(_, { id, firstName, lastName, active, courses }) {
-          const input = { firstName, lastName, active, courses };
+        resolve(_, { id, firstName, lastName, active, coursesIds }) {
+          let input = { firstName, lastName, active };
+          input.courses = coursesIds;
           return Promise.resolve(
             Student.findOneAndUpdate({ _id: id }, input, {
               new: true
