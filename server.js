@@ -27,14 +27,14 @@ const typeDefs = `
     courses: [Course]
   }
 
-  type CourseInput {
+  input CourseInput {
     id: ID!
     name: String!
     description: String
     level: String
   }
 
-  type StudentInput {
+  input StudentInput {
     id: ID!
     firstName: String!
     lastName: String!
