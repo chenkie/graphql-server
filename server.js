@@ -1,16 +1,14 @@
-require('dotenv').config();
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const gql = require('graphql');
-const mongoose = require('mongoose');
 const cors = require('cors');
 
 const port = process.env.PORT || 8080;
 
 const app = express();
 
-const COURSES = require('./data/courses');
-const STUDENTS = require('./data/students');
+let COURSES = require('./data/courses');
+let STUDENTS = require('./data/students');
 
 const CourseType = new gql.GraphQLObjectType({
   name: 'CourseType',
@@ -33,50 +31,6 @@ const StudentType = new gql.GraphQLObjectType({
   }
 });
 
-// Use the GraphQLInputObject types when moving everything over
-// to a single input variable
-
-// const CourseInputType = new gql.GraphQLInputObjectType({
-//   name: 'CourseInputType',
-//   fields: {
-//     name: { type: gql.GraphQLString },
-//     description: { type: gql.GraphQLString },
-//     level: { type: gql.GraphQLString }
-//   }
-// });
-
-// const StudentInputType = new gql.GraphQLInputObjectType({
-//   name: 'StudentInputType',
-//   fields: {
-//     firstName: { type: gql.GraphQLString },
-//     lastName: { type: gql.GraphQLString },
-//     active: { type: gql.GraphQLBoolean },
-//     coursesIds: { type: gql.GraphQLID }
-//   }
-// });
-
-const CourseSchema = mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: false },
-  level: { type: String, required: false }
-});
-
-const StudentSchema = mongoose.Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  active: { type: Boolean, required: true },
-  courses: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'course',
-      required: true
-    }
-  ]
-});
-
-const Course = mongoose.model('course', CourseSchema);
-const Student = mongoose.model('student', StudentSchema);
-
 const schema = new gql.GraphQLSchema({
   query: new gql.GraphQLObjectType({
     name: 'RootQueryType',
@@ -84,13 +38,13 @@ const schema = new gql.GraphQLSchema({
       allCourses: {
         type: new gql.GraphQLList(CourseType),
         resolve() {
-          return Promise.resolve(Course.find({}));
+          return COURSES;
         }
       },
       allStudents: {
         type: new gql.GraphQLList(StudentType),
         resolve() {
-          return Promise.resolve(Student.find({}).populate('courses'));
+          return STUDENTS;
         }
       }
     }
@@ -106,9 +60,10 @@ const schema = new gql.GraphQLSchema({
           level: { type: gql.GraphQLString }
         },
         resolve(_, { name, description, level }) {
-          const input = { name, description, level };
-          const course = new Course(input);
-          return Promise.resolve(course.save());
+          const id = COURSES.length + 1;
+          const input = { id, name, description, level };
+          COURSES.push(input);
+          return input;
         }
       },
       updateCourse: {
@@ -116,14 +71,18 @@ const schema = new gql.GraphQLSchema({
         args: {
           id: { type: new gql.GraphQLNonNull(gql.GraphQLID) },
           name: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
-          description: { type: gql.GraphQLString },
-          level: { type: gql.GraphQLString }
+          description: { type: new gql.GraphQLNonNull(gql.GraphQLString) },
+          level: { type: new gql.GraphQLNonNull(gql.GraphQLString) }
         },
         resolve(_, { id, name, description, level }) {
-          const input = { name, description, level };
-          return Promise.resolve(
-            Course.findOneAndUpdate({ _id: id }, input, { new: true })
-          );
+          const input = { id, name, description, level };
+          COURSES = COURSES.map(course => {
+            if (course.id == id) {
+              course = input;
+            }
+            return course;
+          });
+          return COURSES.find(course => course.id === id);
         }
       },
       deleteCourse: {
@@ -132,7 +91,13 @@ const schema = new gql.GraphQLSchema({
           id: { type: new gql.GraphQLNonNull(gql.GraphQLID) }
         },
         resolve(_, { id }) {
-          return Promise.resolve(Course.findOneAndRemove({ _id: id }));
+          const course = COURSES.find(course => course.id === id);
+          if (!course) {
+            return;
+          }
+          const index = COURSES.indexOf(course);
+          COURSES.splice(index, 1);
+          return course;
         }
       },
       createStudent: {
@@ -146,13 +111,24 @@ const schema = new gql.GraphQLSchema({
           }
         },
         resolve(_, { firstName, lastName, active, coursesIds }) {
-          let input = { firstName, lastName, active, coursesIds };
-          input.courses = coursesIds;
-          const student = new Student(input);
-          student.save();
-          return Promise.resolve(
-            Student.populate(student, { path: 'courses' })
-          );
+          const id = STUDENTS.length + 1;
+          const courses = [];
+          coursesIds.forEach(id => {
+            courses.push(
+              COURSES.find(course => {
+                return course.id === id;
+              })
+            );
+          });
+          const input = {
+            id,
+            firstName,
+            lastName,
+            active,
+            courses
+          };
+          STUDENTS.push(input);
+          return input;
         }
       },
       updateStudent: {
@@ -165,13 +141,18 @@ const schema = new gql.GraphQLSchema({
           coursesIds: { type: new gql.GraphQLList(gql.GraphQLID) }
         },
         resolve(_, { id, firstName, lastName, active, coursesIds }) {
-          let input = { firstName, lastName, active };
-          input.courses = coursesIds;
-          return Promise.resolve(
-            Student.findOneAndUpdate({ _id: id }, input, {
-              new: true
-            }).populate('courses')
-          );
+          let input = { id, firstName, lastName, active };
+          input.courses = [];
+          coursesIds.forEach(courseId => {
+            input.courses.push(COURSES.find(course => course.id === courseId));
+          });
+          STUDENTS = STUDENTS.map(student => {
+            if (student.id === id) {
+              student = input;
+            }
+            return student;
+          });
+          return STUDENTS.find(student => student.id === id);
         }
       },
       deleteStudent: {
@@ -180,9 +161,13 @@ const schema = new gql.GraphQLSchema({
           id: { type: new gql.GraphQLNonNull(gql.GraphQLID) }
         },
         resolve(_, { id }) {
-          return Promise.resolve(
-            Student.findOneAndRemove({ _id: id }).populate('courses')
-          );
+          const student = STUDENTS.find(student => student.id === id);
+          if (!student) {
+            return;
+          }
+          const index = STUDENTS.indexOf(student);
+          STUDENTS.splice(index, 1);
+          return student;
         }
       }
     }
@@ -198,24 +183,5 @@ app.use(
   })
 );
 
-function listen() {
-  app.listen(port);
-  console.log('Express app started on port ' + port);
-}
-
-async function connect() {
-  let options = {
-    useMongoClient: true,
-    keepAlive: true,
-    reconnectTries: 30,
-    socketTimeoutMS: 0
-  };
-  try {
-    await mongoose.connect(process.env.MLAB_URL, options);
-  } catch (err) {
-    console.log(err);
-  }
-  listen();
-}
-
-connect();
+app.listen(port);
+console.log(`Server listening at localhost:${port}`);
