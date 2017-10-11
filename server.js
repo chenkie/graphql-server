@@ -81,47 +81,34 @@ const typeDefs = `
 const resolvers = {
   Query: {
     allCourses: () => {
-      return Promise.resolve(Course.find({}));
+      // TODO: Run a Mongo query to return all courses
     },
     allStudents: () => {
-      return Promise.resolve(Student.find({}).populate('courses'));
+      // TODO: Run a Mongo query to return all students
     }
   },
   Mutation: {
     createCourse: (_, { name, description, level }) => {
+      // TODO: Run a Mongo query to save a new course
       const input = { name, description, level };
-      const course = new Course(input);
-      return Promise.resolve(course.save());
     },
     updateCourse: (_, { id, name, description, level }) => {
+      // TODO: Run a Mongo query to update a course
       const input = { name, description, level };
-      return Promise.resolve(
-        Course.findOneAndUpdate({ _id: id }, input, { new: true })
-      );
     },
     deleteCourse: (_, { id }) => {
-      return Promise.resolve(Course.findOneAndRemove({ _id: id }));
+      // TODO: Run a Mongo query to delete a course
     },
     createStudent: (_, { firstName, lastName, active, coursesIds }) => {
+      // TODO: Run a Mongo query to create a student
       let input = { firstName, lastName, active, coursesIds };
-      input.courses = coursesIds;
-      const student = new Student(input);
-      student.save();
-      return Promise.resolve(Student.populate(student, { path: 'courses' }));
     },
     updateStudent: (_, { id, firstName, lastName, active, coursesIds }) => {
+      // TODO: Run a Mongo query to update a student
       let input = { firstName, lastName, active };
-      input.courses = coursesIds;
-      return Promise.resolve(
-        Student.findOneAndUpdate({ _id: id }, input, {
-          new: true
-        }).populate('courses')
-      );
     },
     deleteStudent: (_, { id }) => {
-      return Promise.resolve(
-        Student.findOneAndRemove({ _id: id }).populate('courses')
-      );
+      // TODO: Run a Mongo query to delete a student
     }
   }
 };
