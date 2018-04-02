@@ -1,6 +1,6 @@
 # GraphQL Students-Courses Server
 
-This is the GraphQL server implementation used in Front End Masters' GraphQL workshop. It contains GraphQL queries and mutations to handle CRUD operations on a **courses** and **students** resource. MongoDB is used to persist the data and a connection to mLab is provided.
+This GraphQL server contains queries and mutations to handle CRUD operations on a **courses** and **students** resource.
 
 ## Getting Started
 
