@@ -51,7 +51,7 @@ const typeDefs = `
     createCourse(name: String!, description: String, level: String): CourseType
     updateCourse(id: ID! name: String!, description: String, level: String): CourseType
     deleteCourse(id: ID!): CourseType
-    createStudent(firstName: String! lastName: String!, active: Boolean!, coursesIds: [String]!): StudentType
+    createStudent(firstName: String! lastName: String!, active: Boolean!, coursesIds: [ID]!): StudentType
     updateStudent(id: ID!, firstName: String! lastName: String!, active: Boolean!, coursesIds: [ID]!): StudentType
     deleteStudent(id: ID!): StudentType
   }
