@@ -13,47 +13,27 @@ let STUDENTS = require('./data/students');
 
 const typeDefs = `
   type CourseType {
-    id: ID
-    name: String
-    description: String
-    level: String
+
   }
 
   type StudentType {
-    id: ID
-    firstName: String
-    lastName: String
-    active: Boolean
-    courses: [CourseType]
+
   }
 
   input CourseInput {
-    id: ID!
-    name: String!
-    description: String
-    level: String
+
   }
 
   input StudentInput {
-    id: ID!
-    firstName: String!
-    lastName: String!
-    active: Boolean!
-    coursesIds: [ID]!
+
   }
 
   type Query {
-    allCourses: [CourseType]
-    allStudents: [StudentType]
+
   }
 
   type Mutation {
-    createCourse(name: String!, description: String, level: String): CourseType
-    updateCourse(id: ID! name: String!, description: String, level: String): CourseType
-    deleteCourse(id: ID!): CourseType
-    createStudent(firstName: String! lastName: String!, active: Boolean!, coursesIds: [ID]!): StudentType
-    updateStudent(id: ID!, firstName: String! lastName: String!, active: Boolean!, coursesIds: [ID]!): StudentType
-    deleteStudent(id: ID!): StudentType
+
   }
 `;
 
